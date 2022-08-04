@@ -16,7 +16,6 @@ package wagi
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"io"
 	"log"
@@ -46,7 +45,7 @@ type Handler struct {
 	Logger     *log.Logger       // optional log for errors or nil to use log.Print
 	Args       []string          // optional arguments to pass to child process
 	Stderr     io.Writer         // optional stderr for the child process; nil means os.Stderr
-	Wagi       *Wagi
+	Wagi       WASIRuntime
 
 	// PathLocationHandler specifies the root http Handler that
 	// should handle internal redirects when the CGI process
@@ -160,8 +159,6 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	defer internalError(err)
 	defer err2.Return(&err) // collocte err
 
-	module := try.To1(h.Wagi.Load(h.Path))
-	ctx := context.Background()
 	stdoutRead, stdoutWrite := io.Pipe()
 	defer stdoutRead.Close()
 	args := append([]string{h.Path}, h.Args...)
@@ -177,16 +174,14 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		config = config.WithEnv(k, v)
 	}
 
-	go func() {
+	try.To1(h.Wagi.Load(h.Path))
+	go func() { // start wasi module
 		defer stdoutWrite.Close()
-		defer func() {
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-			}
-		}()
-		defer err2.Return(&err)
-		m := try.To1(h.Wagi.Run(module, config))
-		defer m.Close(ctx)
+		if err = h.Wagi.Run(h.Path, config); err != nil {
+			fmt.Fprintf(os.Stderr, "run %s failed err: %s\n", h.Path, err)
+			h.Wagi.Unload(h.Path)
+			return
+		}
 	}()
 
 	linebody := bufio.NewReaderSize(stdoutRead, 1024)
@@ -281,13 +276,6 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	_, err = io.Copy(rw, linebody)
 	if err != nil {
 		h.printf("cgi: copy error: %v", err)
-		// And kill the child CGI process so we don't hang on
-		// the deferred cmd.Wait above if the error was just
-		// the client (rw) going away. If it was a read error
-		// (because the child died itself), then the extra
-		// kill of an already-dead process is harmless (the PID
-		// won't be reused until the Wait above).
-		module.Close(ctx)
 	}
 }
 

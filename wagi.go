@@ -7,37 +7,70 @@ import (
 
 	"github.com/lainio/err2"
 	"github.com/lainio/err2/try"
+	"github.com/rs/xid"
 	"github.com/tetratelabs/wazero"
-	"github.com/tetratelabs/wazero/api"
 	"github.com/tetratelabs/wazero/wasi_snapshot_preview1"
 )
 
-type Wagi struct {
-	l       *sync.RWMutex
-	runtime wazero.Runtime
+type WASIRuntime interface {
+	Load(path string) (module wazero.CompiledModule, err error)
+	Run(path string, config wazero.ModuleConfig) (err error)
+	Unload(path string) (err error)
 }
 
-func NewWagi() *Wagi {
+var _ WASIRuntime = &WAZeroRuntime{}
+
+type WAZeroRuntime struct {
+	l       *sync.RWMutex
+	runtime wazero.Runtime
+	codes   map[string]wazero.CompiledModule
+}
+
+func NewWagi() *WAZeroRuntime {
 	ctx := context.Background()
 	runtime := wazero.NewRuntimeWithConfig(wazero.NewRuntimeConfig().WithWasmCore2())
 	try.To1(wasi_snapshot_preview1.Instantiate(ctx, runtime))
-	return &Wagi{
+	return &WAZeroRuntime{
 		runtime: runtime,
 		l:       &sync.RWMutex{},
+		codes:   map[string]wazero.CompiledModule{},
 	}
 }
 
-func (w *Wagi) Load(path string) (module wazero.CompiledModule, err error) {
-	defer err2.Return(&err)
+func (w *WAZeroRuntime) Load(path string) (module wazero.CompiledModule, err error) {
+	defer err2.Return(&err) // handle panic err
+
+	w.l.RLock()
+	module, ok := w.codes[path]
+	if ok {
+		w.l.RUnlock()
+		return
+	}
+	w.l.RUnlock()
+
+	w.l.Lock()
+	defer w.l.Unlock()
+	defer err2.Return(&err) // handle panic err
+
 	b := try.To1(os.ReadFile(path))
 	ctx := context.Background()
 	module = try.To1(w.runtime.CompileModule(ctx, b, wazero.NewCompileConfig()))
+	w.codes[path] = module
 	return
 }
 
-func (w *Wagi) Run(module wazero.CompiledModule, config wazero.ModuleConfig) (m api.Module, err error) {
+func (w *WAZeroRuntime) Run(path string, config wazero.ModuleConfig) (err error) {
 	defer err2.Return(&err)
+
+	code := try.To1(w.Load(path))
 	ctx := context.Background()
-	m = try.To1(w.runtime.InstantiateModule(ctx, module, config))
+	id := xid.New().String()
+	config = config.WithName(id)
+	executedModule := try.To1(w.runtime.InstantiateModule(ctx, code, config))
+	executedModule.Close(ctx)
+	return
+}
+
+func (w *WAZeroRuntime) Unload(path string) (err error) {
 	return
 }
