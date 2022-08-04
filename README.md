@@ -8,8 +8,6 @@
 
 现在让我们看看, 该设想下的无服务器架构.
 
-注意: tinygo 暂不支持 golang 1.19
-
 1. 编写服务
 
    ```go
@@ -31,7 +29,7 @@
       http.HandleFunc("/hello2", func(w http.ResponseWriter, r *http.Request) {
         fmt.Fprintln(w, "hello2")
       })
-      // http.ListenAndServe 替换 cgi.Serve 即可
+      // http.ListenAndServe 替换为 cgi.Serve 即可
       if err := cgi.Serve(nil); err != nil {
         fmt.Fprintln(os.Stderr, err)
       }
@@ -40,6 +38,7 @@
 
 2. 编译成 `wasm` 但输出为 `index.php`, 这样方便重用 php 的配置
    ```sh
+   # 注意: tinygo 暂不支持 golang 1.19
    tinygo build -o ./example/index.php -scheduler=none -target=wasi ./example
    ```
 3. 添加域名访问入口
