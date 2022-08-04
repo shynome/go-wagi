@@ -1,0 +1,8 @@
+{
+  admin off
+}
+
+http://127.0.0.1:7070 {
+  root ./example
+  php_fastcgi localhost:7071
+}
