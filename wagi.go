@@ -38,7 +38,7 @@ func NewWagi() *WAZeroRuntime {
 }
 
 func (w *WAZeroRuntime) Load(path string) (module wazero.CompiledModule, err error) {
-	defer err2.Return(&err) // handle panic err
+	defer err2.Return(&err)
 
 	w.l.RLock()
 	module, ok := w.codes[path]
@@ -50,7 +50,6 @@ func (w *WAZeroRuntime) Load(path string) (module wazero.CompiledModule, err err
 
 	w.l.Lock()
 	defer w.l.Unlock()
-	defer err2.Return(&err) // handle panic err
 
 	b := try.To1(os.ReadFile(path))
 	ctx := context.Background()
