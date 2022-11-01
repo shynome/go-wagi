@@ -9,7 +9,7 @@ import (
 	"github.com/lainio/err2/try"
 	"github.com/rs/xid"
 	"github.com/tetratelabs/wazero"
-	"github.com/tetratelabs/wazero/wasi_snapshot_preview1"
+	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 )
 
 type WASIRuntime interface {
@@ -28,8 +28,8 @@ type WAZeroRuntime struct {
 
 func NewWagi() *WAZeroRuntime {
 	ctx := context.Background()
-	runtime := wazero.NewRuntimeWithConfig(wazero.NewRuntimeConfig().WithWasmCore2())
-	try.To1(wasi_snapshot_preview1.Instantiate(ctx, runtime))
+	runtime := wazero.NewRuntime(ctx)
+	wasi_snapshot_preview1.MustInstantiate(ctx, runtime)
 	return &WAZeroRuntime{
 		runtime: runtime,
 		l:       &sync.RWMutex{},
@@ -53,7 +53,7 @@ func (w *WAZeroRuntime) Load(path string) (module wazero.CompiledModule, err err
 
 	b := try.To1(os.ReadFile(path))
 	ctx := context.Background()
-	module = try.To1(w.runtime.CompileModule(ctx, b, wazero.NewCompileConfig()))
+	module = try.To1(w.runtime.CompileModule(ctx, b))
 	w.codes[path] = module
 	return
 }
