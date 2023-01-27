@@ -2,7 +2,6 @@ package wagi
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -59,9 +58,6 @@ func NewWagi(cfg WagiConfig) *WAZeroRuntime {
 		cacheOpts = append(cacheOpts, ttlcache.WithTTL[string, *Item](cfg.CacheTTL))
 
 		codes = ttlcache.New(cacheOpts...)
-		codes.OnEviction(func(ctx context.Context, er ttlcache.EvictionReason, i *ttlcache.Item[string, *Item]) {
-			fmt.Println(i.Key(), "delete cached")
-		})
 		go codes.Start()
 	}
 
