@@ -34,6 +34,7 @@ func NewItem(path string) *Item {
 var (
 	ErrWasm          = errors.New("wasm err")
 	ErrWasmPathIsDir = fmt.Errorf("the wasm path is dir. %w", ErrWasm)
+	ErrWasmExpired   = fmt.Errorf("the wasm is expired. %w", ErrWasm)
 )
 
 func (s *Item) Init(rt wazero.Runtime) {
@@ -66,6 +67,15 @@ func (s *Item) Error() error {
 	s.locker.RLock()
 	defer s.locker.RUnlock()
 	return s.err
+}
+
+func (s *Item) Expired() (err error) {
+	defer err2.Handle(&err)
+	stat := try.To1(os.Stat(s.filepath))
+	if stat.ModTime().Sub(s.modTime) > 0 {
+		return ErrWasmExpired
+	}
+	return
 }
 
 type Items struct {

@@ -79,7 +79,14 @@ func (w *WAZeroRuntime) Load(path string) (module wazero.CompiledModule, err err
 	v := item.Value()
 	v.locker.RLock()
 	defer v.locker.RUnlock()
-	return v.compiled, v.err
+	if module, err = v.compiled, v.err; err != nil {
+		return
+	}
+	if err = v.Expired(); err != nil {
+		return
+	}
+	w.codes.Set(path, v, 0)
+	return
 }
 
 func (w *WAZeroRuntime) Run(path string, config wazero.ModuleConfig) (err error) {
