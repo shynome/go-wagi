@@ -15,12 +15,12 @@ import (
 )
 
 func main() {
-	runtime := wagi.NewWagi()
+	runtime := wagi.NewWagi(wagi.WagiConfig{})
 	l := try.To1(net.Listen("tcp", "127.0.0.1:7071"))
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var err error
-		defer responseServerError(w, err)
-		defer err2.Return(&err)
+		defer err2.Catch(func(err error) {
+			responseServerError(w, err)
+		})
 		env := fcgi.ProcessEnv(r)
 		h := wagi.Handler{
 			Wagi: runtime,

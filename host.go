@@ -27,8 +27,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/lainio/err2"
-	"github.com/lainio/err2/try"
 	"github.com/tetratelabs/wazero"
 	"golang.org/x/net/http/httpguts"
 )
@@ -157,7 +155,6 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 	var err error
 	defer internalError(err)
-	defer err2.Return(&err) // collocte err
 
 	stdoutRead, stdoutWrite := io.Pipe()
 	defer stdoutRead.Close()
@@ -174,7 +171,6 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		config = config.WithEnv(k, v)
 	}
 
-	try.To1(h.Wagi.Load(h.Path))
 	go func() { // start wasi module
 		defer stdoutWrite.Close()
 		if err = h.Wagi.Run(h.Path, config); err != nil {
