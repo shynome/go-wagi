@@ -175,7 +175,6 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		defer stdoutWrite.Close()
 		if err = h.Wagi.Run(h.Path, config); err != nil {
 			fmt.Fprintf(os.Stderr, "run %s failed err: %s\n", h.Path, err)
-			h.Wagi.Unload(h.Path)
 			return
 		}
 	}()

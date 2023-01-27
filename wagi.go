@@ -113,5 +113,6 @@ func (w *WAZeroRuntime) Run(path string, config wazero.ModuleConfig) (err error)
 }
 
 func (w *WAZeroRuntime) Unload(path string) (err error) {
+	w.codes.Delete(path)
 	return
 }
