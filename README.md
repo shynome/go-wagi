@@ -38,7 +38,9 @@
 
 2. 编译成 `wasm` 但输出为 `index.php`, 这样方便重用 php 的配置
    ```sh
-   # 注意: tinygo 暂不支持 golang 1.19
+   # 编译快速, 但冷启动时间较长(约1.7s), 热响应速度都差不多(约20ms)
+   GOOS=js GOARCH=wasm go build -o ./example/index.php ./example
+   # 编译超慢, 冷启动时间也不短(约0.5s), 不建议使用
    tinygo build -o ./example/index.php -scheduler=none -target=wasi ./example
    ```
 3. 添加域名访问入口
