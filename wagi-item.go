@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"sync"
 	"time"
@@ -40,16 +39,9 @@ var (
 func (s *Item) Init(rt wazero.Runtime) {
 	defer err2.Catch(func(err error) { s.err = err })
 
-	f := try.To1(os.Open(s.filepath))
-	defer f.Close()
-	{ // file info
-		info := try.To1(f.Stat())
-		if info.IsDir() {
-			try.To(ErrWasmPathIsDir)
-		}
-		s.modTime = info.ModTime()
-	}
-	b := try.To1(io.ReadAll(f))
+	b := try.To1(os.ReadFile(s.filepath))
+	stat := try.To1(os.Stat(s.filepath))
+	s.modTime = stat.ModTime()
 
 	ctx := context.Background()
 	s.compiled = try.To1(rt.CompileModule(ctx, b))
