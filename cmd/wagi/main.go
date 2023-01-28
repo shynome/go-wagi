@@ -2,9 +2,11 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"net"
 	"os"
+	"time"
 
 	"net/http"
 	"net/http/fcgi"
@@ -14,9 +16,23 @@ import (
 	"github.com/shynome/go-wagi"
 )
 
+var args struct {
+	addr string
+	ttl  time.Duration
+}
+
+func init() {
+	flag.StringVar(&args.addr, "addr", "127.0.0.1:7071", "")
+	flag.DurationVar(&args.ttl, "cachettl", 15*time.Second, "")
+}
+
 func main() {
-	runtime := wagi.NewWagi(wagi.WagiConfig{})
-	l := try.To1(net.Listen("tcp", "127.0.0.1:7071"))
+	flag.Parse()
+
+	runtime := wagi.NewWagi(wagi.WagiConfig{
+		CacheTTL: args.ttl,
+	})
+	l := try.To1(net.Listen("tcp", args.addr))
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer err2.Catch(func(err error) {
 			responseServerError(w, err)

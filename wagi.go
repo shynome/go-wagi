@@ -55,7 +55,9 @@ func NewWagi(cfg WagiConfig) *WAZeroRuntime {
 		if cfg.CacheTTL == 0 {
 			cfg.CacheTTL = 15 * time.Second
 		}
-		cacheOpts = append(cacheOpts, ttlcache.WithTTL[string, *Item](cfg.CacheTTL))
+		if cfg.CacheTTL > 0 {
+			cacheOpts = append(cacheOpts, ttlcache.WithTTL[string, *Item](cfg.CacheTTL))
+		}
 
 		codes = ttlcache.New(cacheOpts...)
 		go codes.Start()
