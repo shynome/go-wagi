@@ -5,7 +5,9 @@
 http://127.0.0.1:7070 {
   root ./example
   route {
-    php_fastcgi localhost:7071
+    php_fastcgi localhost:7071 {
+      env WASI_NET allow
+    }
     respond 404
   }
 }
