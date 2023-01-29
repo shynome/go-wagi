@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"time"
@@ -19,11 +20,13 @@ import (
 var args struct {
 	addr string
 	ttl  time.Duration
+	dir  string
 }
 
 func init() {
 	flag.StringVar(&args.addr, "addr", "127.0.0.1:7071", "")
 	flag.DurationVar(&args.ttl, "cachettl", 15*time.Second, "")
+	flag.StringVar(&args.dir, "cachedir", ".", "")
 }
 
 func main() {
@@ -31,6 +34,7 @@ func main() {
 
 	runtime := wagi.NewWagi(wagi.WagiConfig{
 		CacheTTL: args.ttl,
+		CacheDir: args.dir,
 	})
 	l := try.To1(net.Listen("tcp", args.addr))
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -50,6 +54,7 @@ func main() {
 		}
 		h.ServeHTTP(w, r)
 	})
+	log.Println("wasi fastcgi server is running on:", l.Addr().String())
 	try.To(fcgi.Serve(l, h))
 }
 

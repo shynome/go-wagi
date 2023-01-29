@@ -33,11 +33,17 @@ type WAZeroRuntime struct {
 type WagiConfig struct {
 	CacheCapacity uint64
 	CacheTTL      time.Duration
+	CacheDir      string
 }
 
 func NewWagi(cfg WagiConfig) *WAZeroRuntime {
 	ctx := context.Background()
-	runtime := wazero.NewRuntime(ctx)
+	rtc := wazero.NewRuntimeConfig()
+	if cfg.CacheDir != "" {
+		cachedir := try.To1(wazero.NewCompilationCacheWithDir(cfg.CacheDir))
+		rtc = rtc.WithCompilationCache(cachedir)
+	}
+	runtime := wazero.NewRuntimeWithConfig(ctx, rtc)
 	wasi_snapshot_preview1.MustInstantiate(ctx, runtime)
 	gojs.MustInstantiate(ctx, runtime)
 
