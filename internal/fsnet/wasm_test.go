@@ -17,6 +17,7 @@ import (
 
 	"github.com/lainio/err2"
 	"github.com/lainio/err2/try"
+	"github.com/shynome/go-fsnet"
 	"github.com/tetratelabs/wazero"
 	gojs "github.com/tetratelabs/wazero/imports/go"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
@@ -39,9 +40,11 @@ func TestWasmNet(t *testing.T) {
 
 	config := wazero.NewModuleConfig()
 
+	fsc := wazero.NewFSConfig()
+	fsc = fsc.WithFSMount(fsnet.New("/dev/"), "/dev")
 	config = config.
 		WithArgs("wasm").
-		WithFS(New("/")).
+		WithFSConfig(fsc).
 		WithStdout(&stdout).WithStderr(&stderr)
 
 	switch testChunk {

@@ -6,9 +6,9 @@ github.com/lainio/err2 v0.8.13/go.mod h1:FmcNs9IbLaDMScvPX4iO5dBsbHl8EnS3ybqP31z
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/rs/xid v1.4.0 h1:qd7wPTDkN6KQx2VmMBLrpHkiyQwgFXRnkOLacUiaSNY=
 github.com/rs/xid v1.4.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=
+github.com/shynome/go-fsnet v0.0.1 h1:0FJt5KKD/eM2cwOAJ2Fy2O4vSrfHXvFRTTdmYT8RbIE=
+github.com/shynome/go-fsnet v0.0.1/go.mod h1:TKyqJzBVBnzdrf0Mj+Rico5fQ7f+DNIfaRQzHPJ8wl4=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
-github.com/tetratelabs/wazero v1.0.0-pre.7 h1:WI5N14XxoXw+ZWhcjSazJ6rEowhJbH/x8hglxC5gN7k=
-github.com/tetratelabs/wazero v1.0.0-pre.7/go.mod h1:u8wrFmpdrykiFK0DFPiFm5a4+0RzsdmXYVtijBKqUVo=
 github.com/tetratelabs/wazero v1.0.0-pre.7.0.20230129093140-574b2a70abba h1:25UP3ZucL9Ff0l2HO+OkS6rmqDIwhjCi3KCxREvRGfI=
 github.com/tetratelabs/wazero v1.0.0-pre.7.0.20230129093140-574b2a70abba/go.mod h1:u8wrFmpdrykiFK0DFPiFm5a4+0RzsdmXYVtijBKqUVo=
 go.uber.org/goleak v1.1.10 h1:z+mqJhf6ss6BSfSM671tgKyZBFPTTJM+HLxnhPC3wu0=

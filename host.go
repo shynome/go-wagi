@@ -27,7 +27,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/shynome/go-wagi/pkg/fsnet"
+	"github.com/shynome/go-fsnet"
 	"github.com/tetratelabs/wazero"
 	"golang.org/x/net/http/httpguts"
 )
@@ -172,7 +172,9 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		config = config.WithEnv(k, v)
 	}
 	if env["WASI_NET"] != "" {
-		config = config.WithFS(fsnet.New("/"))
+		fsc := wazero.NewFSConfig()
+		fsc = fsc.WithFSMount(fsnet.New("/dev/"), "/dev")
+		config = config.WithFSConfig(fsc)
 	}
 
 	go func() { // start wasi module

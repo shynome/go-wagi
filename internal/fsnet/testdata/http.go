@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/lainio/err2/try"
+	"github.com/shynome/go-fsnet/dev"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 }
 
 func testhttp() {
-	var client = &http.Client{Transport: tcpdev}
+	var client = &http.Client{Transport: dev.Transport}
 	req := try.To1(http.NewRequest(http.MethodGet, os.Args[2], nil))
 	resp := try.To1(client.Do(req))
 	fmt.Println("status", resp.Status)

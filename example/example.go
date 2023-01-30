@@ -9,7 +9,7 @@ import (
 
 	"github.com/lainio/err2"
 	"github.com/lainio/err2/try"
-	"github.com/shynome/go-wagi/pkg/fsnet/dev"
+	"github.com/shynome/go-fsnet/dev"
 )
 
 func init() {
