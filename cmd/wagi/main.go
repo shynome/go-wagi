@@ -23,14 +23,18 @@ var args struct {
 	dir  string
 }
 
+var f *flag.FlagSet
+var Version = "dev"
+
 func init() {
-	flag.StringVar(&args.addr, "addr", "127.0.0.1:7071", "")
-	flag.DurationVar(&args.ttl, "cachettl", 15*time.Second, "")
-	flag.StringVar(&args.dir, "cachedir", ".", "")
+	f = flag.NewFlagSet("wagi "+Version, flag.ExitOnError)
+	f.StringVar(&args.addr, "addr", "127.0.0.1:7071", "")
+	f.DurationVar(&args.ttl, "cachettl", 15*time.Second, "")
+	f.StringVar(&args.dir, "cachedir", ".", "")
 }
 
 func main() {
-	flag.Parse()
+	f.Parse(os.Args[1:])
 
 	runtime := wagi.NewWagi(wagi.WagiConfig{
 		CacheTTL: args.ttl,
@@ -54,7 +58,7 @@ func main() {
 		}
 		h.ServeHTTP(w, r)
 	})
-	log.Println("wasi fastcgi server is running on:", l.Addr().String())
+	log.Println(f.Name(), "is running on:", l.Addr().String())
 	try.To(fcgi.Serve(l, h))
 }
 
