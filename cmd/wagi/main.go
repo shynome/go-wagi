@@ -20,7 +20,6 @@ import (
 var args struct {
 	addr string
 	ttl  time.Duration
-	dir  string
 }
 
 var f *flag.FlagSet
@@ -30,7 +29,6 @@ func init() {
 	f = flag.NewFlagSet("wagi "+Version, flag.ExitOnError)
 	f.StringVar(&args.addr, "addr", "127.0.0.1:7071", "")
 	f.DurationVar(&args.ttl, "cachettl", 15*time.Second, "")
-	f.StringVar(&args.dir, "cachedir", ".", "")
 }
 
 func main() {
@@ -38,7 +36,6 @@ func main() {
 
 	runtime := wagi.NewWagi(wagi.WagiConfig{
 		CacheTTL: args.ttl,
-		CacheDir: args.dir,
 	})
 	l := try.To1(net.Listen("tcp", args.addr))
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
