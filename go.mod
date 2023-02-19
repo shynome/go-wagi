@@ -7,7 +7,7 @@ require (
 	github.com/lainio/err2 v0.8.13
 	github.com/rs/xid v1.4.0
 	github.com/shynome/go-fsnet v0.0.1
-	github.com/tetratelabs/wazero v1.0.0-pre.7.0.20230129093140-574b2a70abba
+	github.com/tetratelabs/wazero v1.0.0-pre.9
 	golang.org/x/net v0.0.0-20220802222814-0bcc04d9c69b
 )
 
