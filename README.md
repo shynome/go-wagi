@@ -40,8 +40,8 @@
    ```sh
    # 编译快速, 但冷启动时间较长(约1.7s), 热响应速度都差不多(约20ms)
    GOOS=js GOARCH=wasm go build -o ./example/index.php ./example
-   # 编译超慢, 冷启动时间也不短(约0.5s), 不建议使用
-   tinygo build -o ./example/index.php -scheduler=none -target=wasi ./example
+   # 编译超慢, 冷启动时间约0.5s, 生产环境用
+   tinygo build -target=wasi -no-debug -panic=trap -gc=leaking -o ./example/index.php ./example
    ```
 3. 添加域名访问入口
    ```Caddyfile
