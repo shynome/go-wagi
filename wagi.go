@@ -37,7 +37,9 @@ type WagiConfig struct {
 
 func NewWagi(cfg WagiConfig) *WAZeroRuntime {
 	ctx := context.Background()
-	rtc := wazero.NewRuntimeConfigInterpreter()
+	rtc := wazero.NewRuntimeConfigInterpreter().
+		WithCloseOnContextDone(true).
+		WithMemoryLimitPages(16 * 10) // 10M meomory limit
 	runtime := wazero.NewRuntimeWithConfig(ctx, rtc)
 	wasi_snapshot_preview1.MustInstantiate(ctx, runtime)
 	gojs.MustInstantiate(ctx, runtime)
@@ -100,7 +102,8 @@ func (w *WAZeroRuntime) Run(path string, config wazero.ModuleConfig) (err error)
 	item := w.codes.Get(path).Value()
 	try.To(item.Error())
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	config = config.
 		WithName(xid.New().String())
 	if item.gowasm {
