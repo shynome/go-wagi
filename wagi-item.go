@@ -43,7 +43,8 @@ func (s *Item) Init(rt wazero.Runtime) {
 	stat := try.To1(os.Stat(s.filepath))
 	s.modTime = stat.ModTime()
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
 	s.compiled = try.To1(rt.CompileModule(ctx, b))
 
 	for _, f := range s.compiled.ImportedFunctions() {
