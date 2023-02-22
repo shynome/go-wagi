@@ -180,7 +180,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	go func() { // start wasi module
 		defer stdoutWrite.Close()
 		h.Wagi.Load(h.Path)
-		if err = h.Wagi.Run(h.Path, config); err != nil {
+		if err = h.Wagi.Run(req.Context(), h.Path, config); err != nil {
 			fmt.Fprintf(os.Stderr, "run %s failed err: %s\n", h.Path, err)
 			return
 		}

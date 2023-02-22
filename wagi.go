@@ -18,11 +18,11 @@ import (
 
 type WASIRuntime interface {
 	Load(path string) (module wazero.CompiledModule, err error)
-	Run(path string, config wazero.ModuleConfig) (err error)
+	Run(ctx context.Context, path string, config wazero.ModuleConfig) (err error)
 	Unload(path string) (err error)
 }
 
-var _ WASIRuntime = &WAZeroRuntime{}
+var _ WASIRuntime = (*WAZeroRuntime)(nil)
 
 type WAZeroRuntime struct {
 	l       *sync.RWMutex
@@ -94,7 +94,7 @@ func (w *WAZeroRuntime) Load(path string) (module wazero.CompiledModule, err err
 	return
 }
 
-func (w *WAZeroRuntime) Run(path string, config wazero.ModuleConfig) (err error) {
+func (w *WAZeroRuntime) Run(ctx context.Context, path string, config wazero.ModuleConfig) (err error) {
 	defer err2.Handle(&err, func() {
 		w.codes.Delete(path)
 	})
@@ -102,8 +102,6 @@ func (w *WAZeroRuntime) Run(path string, config wazero.ModuleConfig) (err error)
 	item := w.codes.Get(path).Value()
 	try.To(item.Error())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	config = config.
 		WithName(xid.New().String())
 	if item.gowasm {
