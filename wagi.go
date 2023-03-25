@@ -8,10 +8,9 @@ import (
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/lainio/err2"
 	"github.com/lainio/err2/try"
-	"github.com/rs/xid"
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
-	gojs "github.com/tetratelabs/wazero/imports/go"
+	gojs "github.com/tetratelabs/wazero/experimental/gojs"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 	"github.com/tetratelabs/wazero/sys"
 )
@@ -39,7 +38,7 @@ func NewWagi(cfg WagiConfig) *WAZeroRuntime {
 	ctx := context.Background()
 	rtc := wazero.NewRuntimeConfigInterpreter().
 		WithCloseOnContextDone(true).
-		WithMemoryLimitPages(16 * 10) // 10M meomory limit
+		WithMemoryLimitPages(16 * 20) // 10M meomory limit
 	runtime := wazero.NewRuntimeWithConfig(ctx, rtc)
 	wasi_snapshot_preview1.MustInstantiate(ctx, runtime)
 	gojs.MustInstantiate(ctx, runtime)
@@ -103,9 +102,9 @@ func (w *WAZeroRuntime) Run(ctx context.Context, path string, config wazero.Modu
 	try.To(item.Error())
 
 	config = config.
-		WithName(xid.New().String())
+		WithName("")
 	if item.gowasm {
-		err = gojs.Run(ctx, w.runtime, item.compiled, config)
+		err = gojs.Run(ctx, w.runtime, item.compiled, gojs.NewConfig(config))
 	} else {
 		var m api.Module
 		m, err = w.runtime.InstantiateModule(ctx, item.compiled, config)

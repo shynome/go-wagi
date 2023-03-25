@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0] - 2023-03-24
+
+### Change
+
+- upgrade to wazero 1.0
+- 新版 gojs wasm 的内存需求为 20M, 提高内存限制
+
 ## [0.2.1] - 2023-02-22
 
 ### Fix

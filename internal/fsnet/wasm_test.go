@@ -19,7 +19,7 @@ import (
 	"github.com/lainio/err2/try"
 	"github.com/shynome/go-fsnet"
 	"github.com/tetratelabs/wazero"
-	gojs "github.com/tetratelabs/wazero/imports/go"
+	gojs "github.com/tetratelabs/wazero/experimental/gojs"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 	"github.com/tetratelabs/wazero/sys"
 )
@@ -54,7 +54,7 @@ func TestWasmNet(t *testing.T) {
 		config = config.WithArgs("wasm", "tcp", "/dev/tcp/127.0.0.1/7072")
 	}
 
-	err := gojs.Run(ctx, rt, m, config)
+	err := gojs.Run(ctx, rt, m, gojs.NewConfig(config))
 	// _, err := rt.InstantiateModule(ctx, m, config)
 	if e, ok := err.(*sys.ExitError); ok && e.ExitCode() == 0 {
 		err = nil
