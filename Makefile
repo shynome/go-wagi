@@ -3,7 +3,7 @@ build:
 build-tinygo-demo:
 	tinygo build -o ./example/index.php -target wasi ./example
 build-demo:
-	GOOS=js GOARCH=wasm go build -o ./example/index.php ./example
+	GOOS=wasip1 GOARCH=wasm gotip build -o ./example/index.php ./example
 caddy:
 	caddy run -watch
 demo: build-demo caddy

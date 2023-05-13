@@ -34,6 +34,10 @@ func init() {
 func main() {
 	f.Parse(os.Args[1:])
 
+	runWagi()
+}
+
+func runWagi() {
 	runtime := wagi.NewWagi(wagi.WagiConfig{
 		CacheTTL: args.ttl,
 	})
