@@ -37,7 +37,7 @@ func NewWagi(cfg WagiConfig) *WAZeroRuntime {
 	ctx := context.Background()
 	rtc := wazero.NewRuntimeConfigInterpreter().
 		WithCloseOnContextDone(true).
-		WithMemoryLimitPages(16 * 20) // 10M meomory limit
+		WithMemoryLimitPages(30 * 16) // 10M meomory limit
 	runtime := wazero.NewRuntimeWithConfig(ctx, rtc)
 	wasi_snapshot_preview1.MustInstantiate(ctx, runtime)
 
