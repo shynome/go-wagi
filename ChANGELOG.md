@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unrelease] - 
+
+### Break Change
+
+- 移除 gojs 支持
+
 ## [0.3.0] - 2023-03-24
 
 ### Change
