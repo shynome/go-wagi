@@ -20,7 +20,6 @@ type Item struct {
 	modTime  time.Time
 	compiled wazero.CompiledModule
 	err      error
-	gowasm   bool
 }
 
 func NewItem(path string) *Item {
@@ -46,14 +45,6 @@ func (s *Item) Init(rt wazero.Runtime) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	s.compiled = try.To1(rt.CompileModule(ctx, b))
-
-	for _, f := range s.compiled.ImportedFunctions() {
-		switch n, _, _ := f.Import(); n {
-		case "go":
-			s.gowasm = true
-			break
-		}
-	}
 }
 
 func (s *Item) Error() error {

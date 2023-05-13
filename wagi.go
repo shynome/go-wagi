@@ -10,7 +10,6 @@ import (
 	"github.com/lainio/err2/try"
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
-	gojs "github.com/tetratelabs/wazero/experimental/gojs"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 	"github.com/tetratelabs/wazero/sys"
 )
@@ -41,7 +40,6 @@ func NewWagi(cfg WagiConfig) *WAZeroRuntime {
 		WithMemoryLimitPages(16 * 20) // 10M meomory limit
 	runtime := wazero.NewRuntimeWithConfig(ctx, rtc)
 	wasi_snapshot_preview1.MustInstantiate(ctx, runtime)
-	gojs.MustInstantiate(ctx, runtime)
 
 	var codes *ttlcache.Cache[string, *Item]
 	{ // codes cache
@@ -103,13 +101,10 @@ func (w *WAZeroRuntime) Run(ctx context.Context, path string, config wazero.Modu
 
 	config = config.
 		WithName("")
-	if item.gowasm {
-		err = gojs.Run(ctx, w.runtime, item.compiled, gojs.NewConfig(config))
-	} else {
-		var m api.Module
-		m, err = w.runtime.InstantiateModule(ctx, item.compiled, config)
-		m.Close(ctx)
-	}
+	var m api.Module
+	m, err = w.runtime.InstantiateModule(ctx, item.compiled, config)
+	m.Close(ctx)
+
 	if e, ok := err.(*sys.ExitError); ok {
 		if code := e.ExitCode(); code == 0 {
 			return nil
