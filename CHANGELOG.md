@@ -1,10 +1,14 @@
 # Changelog
 
-## [Unrelease] - 
+## [0.4.0] - 2023-06-11
 
 ### Break Change
 
 - 移除 gojs 支持
+
+### Improve
+
+- wazero 升级到 1.2.0
 
 ## [0.3.0] - 2023-03-24
 
