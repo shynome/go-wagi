@@ -2,8 +2,6 @@
 
 使用 cgi 调用 wasm 不就是天然的无服务器嘛, 资源占用小, 隔离性好, 这么多优势岂能不试
 
-不足之处: golang 对 wasi 尚未正式支持.
-
 ## 使用
 
 现在让我们看看, 该设想下的无服务器架构.
@@ -38,7 +36,7 @@
 
 2. 编译成 `wasm` 但输出为 `index.php`, 这样方便重用 php 的配置
    ```sh
-   GOOS=wasip1 GOARCH=wasm gotip build -o ./example/index.php ./example
+   GOOS=wasip1 GOARCH=wasm go build -o ./example/index.php ./example
    ```
 3. 添加域名访问入口
    ```Caddyfile
