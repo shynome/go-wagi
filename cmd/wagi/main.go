@@ -45,7 +45,8 @@ func runWagi() {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		defer err0.Then(&err, nil, func() {
-			responseServerError(w, err)
+			w.WriteHeader(500)
+			fmt.Fprintf(w, "%s \r\n", err)
 		})
 		env := fcgi.ProcessEnv(r)
 		h := wagi.Handler{
@@ -62,14 +63,6 @@ func runWagi() {
 	})
 	log.Println(f.Name(), "is running on:", l.Addr().String())
 	try.To(fcgi.Serve(l, h))
-}
-
-func responseServerError(w http.ResponseWriter, err error) {
-	if err == nil {
-		return
-	}
-	w.WriteHeader(500)
-	fmt.Fprintf(w, "%s \r\n", err)
 }
 
 func fileExists(name string) (bool, error) {
