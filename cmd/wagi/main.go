@@ -12,8 +12,8 @@ import (
 	"net/http"
 	"net/http/fcgi"
 
-	"github.com/lainio/err2"
-	"github.com/lainio/err2/try"
+	"github.com/shynome/err0"
+	"github.com/shynome/err0/try"
 	"github.com/shynome/go-wagi"
 )
 
@@ -43,7 +43,8 @@ func runWagi() {
 	})
 	l := try.To1(net.Listen("tcp", args.addr))
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer err2.Catch(func(err error) {
+		var err error
+		defer err0.Then(&err, nil, func() {
 			responseServerError(w, err)
 		})
 		env := fcgi.ProcessEnv(r)

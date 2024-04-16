@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lainio/err2"
-	"github.com/lainio/err2/assert"
-	"github.com/lainio/err2/try"
+	"github.com/shynome/err0"
+	"github.com/shynome/err0/try"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWagi(t *testing.T) {
@@ -29,7 +29,7 @@ func TestWagi(t *testing.T) {
 	time.Sleep(2 * time.Second) // wait server ready
 
 	httpGet := func(path string) (s string, err error) {
-		defer err2.Handle(&err)
+		defer err0.Then(&err, nil, nil)
 		link := fmt.Sprintf("http://%s%s", caddyAddr, path)
 		res := try.To1(http.Get(link))
 		b := try.To1(io.ReadAll(res.Body))
@@ -38,17 +38,17 @@ func TestWagi(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		index := try.To1(httpGet("/"))
-		assert.Equal(index, "index\n")
+		assert.Equal(t, index, "index\n")
 
 		hello1 := try.To1(httpGet("/hello1"))
-		assert.Equal(hello1, "hello1\n")
+		assert.Equal(t, hello1, "hello1\n")
 
 		hello2 := try.To1(httpGet("/hello2"))
-		assert.Equal(hello2, "hello2\n")
+		assert.Equal(t, hello2, "hello2\n")
 	})
 	t.Run("fsnet", func(t *testing.T) {
 		fsnet := try.To1(httpGet("/cat-index"))
-		assert.Equal(fsnet, "cat-index\nindex\n")
+		assert.Equal(t, fsnet, "cat-index\nindex\n")
 	})
 }
 
@@ -82,7 +82,7 @@ http://%s {
 `
 
 func runCaddy(conf string) *os.Process {
-	cmd := exec.Command("caddy", "run", "-config", "-", "-adapter", "caddyfile")
+	cmd := exec.Command("caddy", "run", "--config", "-", "--adapter", "caddyfile")
 	cmd.Dir = testPWD
 	cmd.Stdin = bytes.NewBufferString(conf)
 	cmd.Stdout = os.Stdout

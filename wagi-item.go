@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
-	"github.com/lainio/err2"
-	"github.com/lainio/err2/try"
+	"github.com/shynome/err0"
+	"github.com/shynome/err0/try"
 	"github.com/tetratelabs/wazero"
 )
 
@@ -36,7 +36,8 @@ var (
 )
 
 func (s *Item) Init(rt wazero.Runtime) {
-	defer err2.Catch(func(err error) { s.err = err })
+	var err error
+	defer err0.Then(&err, nil, func() { s.err = err })
 
 	b := try.To1(os.ReadFile(s.filepath))
 	stat := try.To1(os.Stat(s.filepath))
@@ -54,7 +55,7 @@ func (s *Item) Error() error {
 }
 
 func (s *Item) Expired() (err error) {
-	defer err2.Handle(&err)
+	defer err0.Then(&err, nil, nil)
 	stat := try.To1(os.Stat(s.filepath))
 	if stat.ModTime().Sub(s.modTime) > 0 {
 		return ErrWasmExpired

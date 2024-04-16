@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/lainio/err2"
-	"github.com/lainio/err2/try"
+	"github.com/shynome/err0"
+	"github.com/shynome/err0/try"
 	"github.com/shynome/go-fsnet/dev"
 )
 
@@ -24,7 +24,8 @@ func init() {
 		fmt.Fprintln(w, "hello2")
 	})
 	http.HandleFunc("/cat-index", func(w http.ResponseWriter, r *http.Request) {
-		defer err2.Catch(func(err error) {
+		var err error
+		defer err0.Then(&err, nil, func() {
 			http.Error(w, err.Error(), 500)
 		})
 		var client = &http.Client{

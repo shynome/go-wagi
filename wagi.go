@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
-	"github.com/lainio/err2"
-	"github.com/lainio/err2/try"
+	"github.com/shynome/err0"
+	"github.com/shynome/err0/try"
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
@@ -92,7 +92,7 @@ func (w *WAZeroRuntime) Load(path string) (module wazero.CompiledModule, err err
 }
 
 func (w *WAZeroRuntime) Run(ctx context.Context, path string, config wazero.ModuleConfig) (err error) {
-	defer err2.Handle(&err, func() {
+	defer err0.Then(&err, nil, func() {
 		w.codes.Delete(path)
 	})
 
