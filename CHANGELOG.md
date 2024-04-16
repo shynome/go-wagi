@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.1] - Unrelease
+
+- [x] 已升级至 wazero 1.7.1
+- [ ] 性能提升, 现在的性能过于拉垮
+
 ## [0.4.0] - 2023-06-11
 
 ### Break Change
