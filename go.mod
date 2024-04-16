@@ -1,6 +1,6 @@
 module github.com/shynome/go-wagi
 
-go 1.18
+go 1.22.0
 
 require (
 	github.com/jellydator/ttlcache/v3 v3.0.1
