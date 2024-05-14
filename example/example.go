@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/cgi"
 	"os"
 	"strings"
 
 	"github.com/shynome/err0"
 	"github.com/shynome/err0/try"
 	"github.com/shynome/go-fsnet/dev"
+	"github.com/shynome/wcgi"
 )
 
 func init() {
@@ -40,7 +40,7 @@ func init() {
 }
 
 func main() {
-	if err := cgi.Serve(nil); err != nil {
+	if err := wcgi.Serve(nil); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
 }
