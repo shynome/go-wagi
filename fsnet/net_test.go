@@ -88,6 +88,12 @@ func TestNet(t *testing.T) {
 		check(t, true, false)
 	})
 
+	t.Run("reject other but allow second", func(t *testing.T) {
+		rule := "bypass=~0.0.0.0/0,::/0,*&bypass=~" + l1Addr + "&bypass=" + l2Addr
+		setFileOpener(fsnet.New(rule))
+
+		check(t, false, true)
+	})
 }
 
 var client = &http.Client{Transport: dev.Transport}
@@ -98,17 +104,17 @@ func check(t *testing.T, ok1, ok2 bool) {
 		addr := addrs[i]
 		if ok {
 			if resp, err := client.Get("http://" + addr); err != nil {
-				t.Error(err)
+				t.Error(i, err)
 				return
 			} else {
 				defer resp.Body.Close()
 				if code := resp.StatusCode; code != http.StatusOK {
-					t.Error(code)
+					t.Error(i, code)
 					return
 				}
 				body := try.To1(io.ReadAll(resp.Body))
 				if body := string(body); body != "ok" {
-					t.Error(body)
+					t.Error(i, body)
 					return
 				}
 			}
@@ -116,7 +122,7 @@ func check(t *testing.T, ok1, ok2 bool) {
 		} else {
 			if resp, err := client.Get("http://" + addr); err == nil {
 				t.Error(resp.Status)
-				t.Error("the host should be rejected")
+				t.Error(i, "the host should be rejected")
 				return
 			} else {
 				t.Log(err)
