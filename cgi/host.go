@@ -16,6 +16,7 @@ package cgi
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -23,40 +24,26 @@ import (
 	"net/http"
 	"net/textproto"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
 
+	"github.com/shynome/go-wagi/fsnet"
+	"github.com/tetratelabs/wazero"
+	"github.com/tetratelabs/wazero/api"
 	"golang.org/x/net/http/httpguts"
 )
 
 var trailingPort = regexp.MustCompile(`:([0-9]+)$`)
 
-var osDefaultInheritEnv = func() []string {
-	switch runtime.GOOS {
-	case "darwin", "ios":
-		return []string{"DYLD_LIBRARY_PATH"}
-	case "android", "linux", "freebsd", "netbsd", "openbsd":
-		return []string{"LD_LIBRARY_PATH"}
-	case "hpux":
-		return []string{"LD_LIBRARY_PATH", "SHLIB_PATH"}
-	case "irix":
-		return []string{"LD_LIBRARY_PATH", "LD_LIBRARYN32_PATH", "LD_LIBRARY64_PATH"}
-	case "illumos", "solaris":
-		return []string{"LD_LIBRARY_PATH", "LD_LIBRARY_PATH_32", "LD_LIBRARY_PATH_64"}
-	case "windows":
-		return []string{"SystemRoot", "COMSPEC", "PATHEXT", "WINDIR"}
-	}
-	return nil
-}()
-
 // Handler runs an executable in a subprocess with a CGI environment.
 type Handler struct {
 	Path string // path to the CGI executable
 	Root string // root URI prefix of handler or empty for "/"
+
+	Runtime wazero.Runtime
+	WASM    wazero.CompiledModule
 
 	// Dir specifies the CGI executable's working directory.
 	// If Dir is empty, the base directory of Path is used.
@@ -183,19 +170,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		env = append(env, "CONTENT_TYPE="+ctype)
 	}
 
-	envPath := os.Getenv("PATH")
-	if envPath == "" {
-		envPath = "/bin:/usr/bin:/usr/ucb:/usr/bsd:/usr/local/bin"
-	}
-	env = append(env, "PATH="+envPath)
-
 	for _, e := range h.InheritEnv {
-		if v := os.Getenv(e); v != "" {
-			env = append(env, e+"="+v)
-		}
-	}
-
-	for _, e := range osDefaultInheritEnv {
 		if v := os.Getenv(e); v != "" {
 			env = append(env, e+"="+v)
 		}
@@ -217,37 +192,64 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if cwd == "" {
 		cwd = "."
 	}
+	_ = path
 
+	var err error
 	internalError := func(err error) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		h.printf("CGI error: %v", err)
 	}
 
-	cmd := &exec.Cmd{
-		Path:   path,
-		Args:   append([]string{h.Path}, h.Args...),
-		Dir:    cwd,
-		Env:    env,
-		Stderr: h.stderr(),
-	}
-	if req.ContentLength != 0 {
-		cmd.Stdin = req.Body
-	}
-	stdoutRead, err := cmd.StdoutPipe()
-	if err != nil {
-		internalError(err)
-		return
+	envMap := make(map[string]string, len(env))
+	for _, vv := range env {
+		arr := strings.SplitN(vv, "=", 2)
+		if len(arr) != 2 {
+			continue
+		}
+		k, v := arr[0], arr[1]
+		envMap[k] = v
 	}
 
-	err = cmd.Start()
-	if err != nil {
+	mc := wazero.NewModuleConfig()
+	if h.WASM == nil || h.Runtime == nil {
+		err := fmt.Errorf("Runtime and compiled WASM is required")
 		internalError(err)
 		return
 	}
-	if hook := testHookStartProcess; hook != nil {
-		hook(cmd.Process)
+	mc = mc.WithArgs(h.Args...)
+	fsc := wazero.NewFSConfig()
+	fsc = fsc.WithDirMount(cwd, cwd)
+	if rule := envMap["WASI_NET"]; rule != "" {
+		fsc = fsc.WithFSMount(fsnet.New(rule), "/dev")
 	}
-	defer cmd.Wait()
+	mc = mc.WithFSConfig(fsc)
+	for k, v := range envMap {
+		mc = mc.WithEnv(k, v)
+	}
+	mc = mc.WithStderr(h.stderr())
+
+	if req.ContentLength != 0 {
+		mc = mc.WithStdin(req.Body)
+	}
+	stdoutRead, stdout := io.Pipe()
+	mc = mc.WithStdout(stdout)
+
+	ctx := req.Context()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	go func() {
+		defer stdout.Close()
+		mc := mc.WithName("")
+		mod, err := h.Runtime.InstantiateModule(ctx, h.WASM, mc)
+		if err != nil {
+			return
+		}
+		defer mod.Close(ctx)
+		if hook := testHookStartProcess; hook != nil {
+			hook(mod)
+		}
+	}()
 	defer stdoutRead.Close()
 
 	linebody := bufio.NewReaderSize(stdoutRead, 1024)
@@ -348,7 +350,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		// (because the child died itself), then the extra
 		// kill of an already-dead process is harmless (the PID
 		// won't be reused until the Wait above).
-		cmd.Process.Kill()
+		cancel()
 	}
 }
 
@@ -406,4 +408,4 @@ func upperCaseAndUnderscore(r rune) rune {
 	return r
 }
 
-var testHookStartProcess func(*os.Process) // nil except for some tests
+var testHookStartProcess func(api.Module) // nil except for some tests
