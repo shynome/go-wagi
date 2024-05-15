@@ -211,6 +211,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	mc := wazero.NewModuleConfig()
+	mc = WithCommonConfig(mc)
 	if h.WASM == nil || h.Runtime == nil {
 		err := fmt.Errorf("Runtime and compiled WASM is required")
 		internalError(err)
