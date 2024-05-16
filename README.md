@@ -61,4 +61,4 @@
 
 ## Todo
 
-- [ ] `WASI_NET` 白名单支持, 目前可以访问所有网络, 有安全隐患
+- [x] `WASI_NET` 白名单支持, 规则参考 [gost bypass](https://gost.run/concepts/bypass/)
