@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/shynome/err0"
 	"github.com/shynome/err0/try"
@@ -31,7 +30,7 @@ func init() {
 		var client = &http.Client{
 			Transport: dev.Transport,
 		}
-		index := strings.TrimSuffix(r.URL.String(), "cat-index")
+		index := "http://" + r.Host + "/cat-index"
 		req := try.To1(http.NewRequest("GET", index, nil))
 		resp := try.To1(client.Do(req))
 		io.WriteString(w, "cat-index\n")
