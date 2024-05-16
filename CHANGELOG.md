@@ -1,9 +1,11 @@
 # Changelog
 
-## [0.4.1] - Unrelease
+## [0.5.0] - Unrelease
 
 - [x] 已升级至 wazero 1.7.1
+- [x] binary 名称由 `wagi` 变更为 `go-wagi`
 - [ ] 性能提升, 现在的性能过于拉垮
+- [x] `WASI_NET` 白名单支持
 
 ## [0.4.0] - 2023-06-11
 
