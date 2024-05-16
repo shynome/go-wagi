@@ -61,4 +61,5 @@
 
 ## Todo
 
+- [ ] 发布新版 v0.5.0, 新版测试未通过, 因为读取文件会使程序 hangup, 导致调用自身失败 `/cat-index`
 - [x] `WASI_NET` 白名单支持, 规则参考 [gost bypass](https://gost.run/concepts/bypass/)
