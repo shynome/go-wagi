@@ -30,7 +30,7 @@ func init() {
 		var client = &http.Client{
 			Transport: dev.Transport,
 		}
-		index := "http://" + r.Host + "/cat-index"
+		index := "http://" + r.Host + "/"
 		req := try.To1(http.NewRequest("GET", index, nil))
 		resp := try.To1(client.Do(req))
 		io.WriteString(w, "cat-index\n")
