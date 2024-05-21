@@ -118,7 +118,7 @@ var rootCmd = &cobra.Command{
 						return
 					}
 					if mod, err := wasmGet(); err == nil {
-						mod.Close(context.Background())
+						mod.Close()
 					}
 					mCache.Del(wasmKey)
 				}()
@@ -147,16 +147,23 @@ var rootCmd = &cobra.Command{
 						return nil, err
 					}
 					ctx := inst.ctx
-					ctx, cancel := context.WithTimeout(ctx, 3*time.Minute)
-					defer cancel()
-					mod, err := rt.CompileModule(ctx, binary)
+					ctx2, timeout := context.WithTimeout(ctx, 3*time.Minute)
+					defer timeout()
+					mod, err := rt.CompileModule(ctx2, binary)
 					if err != nil {
 						return nil, err
 					}
+					ctx, cancel := context.WithCancel(ctx)
+					go func() {
+						<-ctx.Done()
+						mCache.Del(wasmKey)
+						mod.Close(ctx)
+					}()
 					_, wcgi := mod.ExportedFunctions()["wagi_wcgi"]
 					return &WasmItem{
 						CompiledModule: mod,
 						SupportWCGI:    wcgi,
+						Close:          cancel,
 					}, nil
 				})
 				mCache.Set(wasmKey, wasmGet)
@@ -326,6 +333,7 @@ type InstanceItem struct {
 type WasmItem struct {
 	wazero.CompiledModule
 	SupportWCGI bool
+	Close       func()
 }
 
 type ProxyItem struct {
