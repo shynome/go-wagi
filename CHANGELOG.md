@@ -1,11 +1,11 @@
 # Changelog
 
-## [0.5.0] - Unrelease
+## [0.5.0] - 2024-05-21
 
-- [x] 已升级至 wazero 1.7.1
-- [x] binary 名称由 `wagi` 变更为 `go-wagi`
-- [ ] 性能提升, 现在的性能过于拉垮
-- [x] `WASI_NET` 白名单支持
+- wazero 升级至 1.7.2
+- binary 名称由 `wagi` 变更为 `go-wagi`
+- 性能提升, 使用 yamux 复用进程, 大大提高了 compiler 模式下的性能, 这被称为 `wcgi` 模式
+- `WASI_NET` 白名单支持 (注意网络访问会导致进程卡住)
 
 ## [0.4.0] - 2023-06-11
 
