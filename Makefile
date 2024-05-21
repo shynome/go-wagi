@@ -1,5 +1,5 @@
 build:
-	go build -o wagi -ldflags="-X 'main.Version=$$(git describe --tags --always --dirty)'" ./cmd/wagi
+	CGO_ENABLED=0 go build -ldflags="-X 'main.Version=$$(git describe --tags --always --dirty)'" .
 build-demo:
 	GOOS=wasip1 GOARCH=wasm go build -o ./example/index.php ./example
 wcgi: build-demo
