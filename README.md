@@ -61,5 +61,6 @@
 
 ## Todo
 
-- [ ] 发布新版 v0.5.0, 新版测试未通过, 因为读取文件会使程序 hangup, 导致调用自身失败 `/cat-index`
+- [ ] 支持资源限制
+- [ ] 支持通过网络调用自身 API, 由于读取文件会导致程序挂起, 这目前不可实现, 等待 wazero 实现 [support non-blocking files](https://github.com/tetratelabs/wazero/issues/1500)
 - [x] `WASI_NET` 白名单支持, 规则参考 [gost bypass](https://gost.run/concepts/bypass/)
