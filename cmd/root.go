@@ -59,8 +59,7 @@ var rootCmd = &cobra.Command{
 		instCache := newCache[*InstanceItem]()
 
 		var keepAlive = 10 * time.Minute
-		srv := http.NewServeMux()
-		srv.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var err error
 			defer err0.Then(&err, nil, func() {
 				log.Println("err", err)
@@ -285,7 +284,7 @@ var rootCmd = &cobra.Command{
 		})
 
 		slog.Warn("server is running", "addr", l.Addr())
-		try.To(fcgi.Serve(l, srv))
+		try.To(fcgi.Serve(l, h))
 	},
 }
 
