@@ -56,9 +56,11 @@ var rootCmd = &cobra.Command{
 
 		mCache := newCache[func() (*WasmItem, error)]()
 		proxyCache := newCache[func() (*ProxyItem, error)]()
+		instCache := newCache[*InstanceItem]()
 
 		var keepAlive = 10 * time.Minute
-		h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv := http.NewServeMux()
+		srv.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			var err error
 			defer err0.Then(&err, nil, func() {
 				log.Println("err", err)
@@ -70,20 +72,82 @@ var rootCmd = &cobra.Command{
 			cwd := env["DOCUMENT_ROOT"]
 			finfo := try.To1(os.Stat(script))
 
-			key := fmt.Sprintf("attr-%s-%d", script, finfo.ModTime().Unix())
+			fileKey := "file-" + script
+			wasmKey := fmt.Sprintf("file-%s-%d", script, finfo.ModTime().Unix())
+			netRule := env["WASI_NET"]
+			proxyKey := strings.Join([]string{wasmKey, env["WASI_DEBUG"], cwd, netRule}, ",")
 
-			wasmGet := mCache.Get(key)
+			inst := instCache.Get(fileKey)
+			if inst == nil {
+				func() {
+					instCache.mux.Lock()
+					defer instCache.mux.Unlock()
+					ctx := context.Background()
+					ctx, cancel := context.WithCancel(ctx)
+					timer := time.AfterFunc(keepAlive, func() {
+						cancel()
+					})
+					go func() {
+						<-ctx.Done()
+						instCache.Del(fileKey)
+					}()
+					inst = &InstanceItem{
+						WasmKey:  wasmKey,
+						ProxyKey: proxyKey,
+						timer:    timer,
+						ctx:      ctx,
+					}
+				}()
+				instCache.Set(fileKey, inst)
+			} else {
+				inst.timer.Reset(keepAlive)
+			}
+
+			wasmGet := mCache.Get(wasmKey)
+			proxyGet := proxyCache.Get(proxyKey)
+			func() {
+				instCache.mux.RLock()
+				defer instCache.mux.RUnlock()
+
+				// clear old wasm module
+				func() {
+					if inst.WasmKey == wasmKey {
+						return
+					}
+					wasmGet := mCache.Get(inst.WasmKey)
+					if wasmGet == nil {
+						return
+					}
+					if mod, err := wasmGet(); err == nil {
+						mod.Close(context.Background())
+					}
+					mCache.Del(wasmKey)
+				}()
+				// clear old proxy instance
+				func() {
+					if inst.ProxyKey == proxyKey {
+						return
+					}
+					proxyGet := proxyCache.Get(inst.ProxyKey)
+					if proxyGet == nil {
+						return
+					}
+					if proxy, err := proxyGet(); err == nil {
+						proxy.Close()
+					}
+					mCache.Del(proxyKey)
+				}()
+				inst.WasmKey = wasmKey
+				inst.ProxyKey = proxyKey
+			}()
+
 			if wasmGet == nil {
 				wasmGet = sync.OnceValues(func() (*WasmItem, error) {
-					timer := time.AfterFunc(keepAlive, func() {
-						slog.Debug("clear wasm module cache", "key", key)
-						mCache.Del(key)
-					})
 					binary, err := os.ReadFile(script)
 					if err != nil {
 						return nil, err
 					}
-					ctx := context.Background()
+					ctx := inst.ctx
 					ctx, cancel := context.WithTimeout(ctx, 3*time.Minute)
 					defer cancel()
 					mod, err := rt.CompileModule(ctx, binary)
@@ -93,18 +157,16 @@ var rootCmd = &cobra.Command{
 					_, wcgi := mod.ExportedFunctions()["wagi_wcgi"]
 					return &WasmItem{
 						CompiledModule: mod,
-						timer:          timer,
 						SupportWCGI:    wcgi,
 					}, nil
 				})
-				mCache.Set(key, wasmGet)
+				mCache.Set(wasmKey, wasmGet)
 			}
 			wasm, err := wasmGet()
 			if err != nil {
-				mCache.Del(key)
+				mCache.Del(wasmKey)
 				return
 			}
-			wasm.timer.Reset(keepAlive)
 
 			// 强制以 CGI 模式运行
 			forceCGI := env["WASI_CGI"] == "true"
@@ -128,21 +190,10 @@ var rootCmd = &cobra.Command{
 				return
 			}
 
-			netRule := env["WASI_NET"]
-			proxyKey := strings.Join([]string{
-				key,
-				env["WASI_DEBUG"],
-				cwd,
-				netRule,
-			}, ",")
-			proxyGet := proxyCache.Get(proxyKey)
 			if proxyGet == nil {
 				proxyGet = sync.OnceValues(func() (_ *ProxyItem, err error) {
-					ctx := context.Background()
+					ctx := inst.ctx
 					ctx, cancel := context.WithCancel(ctx)
-					timer := time.AfterFunc(keepAlive, func() {
-						cancel()
-					})
 					go func() {
 						<-ctx.Done()
 						proxyCache.Del(proxyKey)
@@ -217,7 +268,6 @@ var rootCmd = &cobra.Command{
 
 					proxy := &ProxyItem{
 						Handler: handler,
-						timer:   timer,
 						Close:   cancel,
 					}
 					return proxy, nil
@@ -228,18 +278,14 @@ var rootCmd = &cobra.Command{
 			proxy, err := proxyGet()
 			if err != nil {
 				proxyCache.Del(proxyKey)
-				if proxy != nil {
-					proxy.Close()
-				}
 				return
 			}
-			proxy.timer.Reset(keepAlive)
 
 			proxy.ServeHTTP(w, r)
 		})
 
 		slog.Warn("server is running", "addr", l.Addr())
-		try.To(fcgi.Serve(l, h))
+		try.To(fcgi.Serve(l, srv))
 	},
 }
 
@@ -271,46 +317,19 @@ func init() {
 	rootCmd.Flags().StringVar(&args.listen, "listen", "127.0.0.1:7071", "listen addr")
 }
 
+type InstanceItem struct {
+	WasmKey  string
+	ProxyKey string
+	ctx      context.Context
+	timer    *time.Timer
+}
+
 type WasmItem struct {
 	wazero.CompiledModule
-	timer       *time.Timer
 	SupportWCGI bool
 }
 
 type ProxyItem struct {
 	http.Handler
-	timer *time.Timer
 	Close func()
-}
-
-type Cache[T any] struct {
-	items map[string]T
-	mux   sync.RWMutex
-}
-
-func newCache[T any]() *Cache[T] {
-	return &Cache[T]{
-		items: map[string]T{},
-	}
-}
-
-func (cache *Cache[T]) Get(key string) T {
-	cache.mux.RLock()
-	defer cache.mux.RUnlock()
-	return cache.items[key]
-}
-
-func (cache *Cache[T]) Set(key string, val T) {
-	cache.mux.Lock()
-	defer cache.mux.Unlock()
-	cache.items[key] = val
-}
-
-func (cache *Cache[T]) Del(key string) {
-	cache.mux.Lock()
-	defer cache.mux.Unlock()
-	if _, ok := cache.items[key]; !ok {
-		return
-	}
-	delete(cache.items, key)
 }
