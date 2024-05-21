@@ -43,21 +43,38 @@
     # Caddyfile
     http://127.0.0.1:7070 {
       root ./example
-      php_fastcgi localhost:7071
+      php_fastcgi localhost:7071 {
+        # 添加文件网络功能
+        # env WASI_NET bypass=127.0.0.1
+      }
     }
    ```
    运行 `caddyserver`:
    ```sh
-   caddy run -watch
+   caddy run --watch
    ```
-4. 另起终端运行 `wasm cgi server`:
+4. 另起终端运行 `go-wagi`:
    ```sh
-   go run ./cmd/wagi
+   go run .
    ```
 5. 大功告成, 打开下列网址测试吧:
    - [`http://127.0.0.1:7070/`](http://127.0.0.1:7070)
    - [`/hello1`](http://127.0.0.1:7070/hello1)
    - [`/hello2`](http://127.0.0.1:7070/hello2)
+
+### WCGI 模式
+
+当 wasm module 的 export functions 中含有 `wagi_wcgi`, 会启用该模式,
+该模式复用进程, 可以将 golang wasm 的 qps 由 cgi 的 98 提高至 2380, 提高 20 倍性能
+
+具体查看 [example.go](./example/example.go)
+
+由于目前 golang 尚未实现 [go:wasmexport](https://github.com/golang/go/issues/65199),
+目前需要 [`wasm-merge`](https://github.com/WebAssembly/binaryen) 来为 golang wasm 添加 wagi_wcgi export function
+
+`wasm-merge -all index.php m wcgi.wat m -o index.php`
+
+[wcgi.wat 文件在这](./example/wcgi.wat)
 
 ## Todo
 
