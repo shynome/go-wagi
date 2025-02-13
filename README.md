@@ -67,14 +67,7 @@
 当 wasm module 的 export functions 中含有 `wagi_wcgi`, 会启用该模式,
 该模式复用进程, 可以将 golang wasm 的 qps 由 cgi 的 98 提高至 2380, 提高 20 倍性能
 
-具体查看 [example.go](./example/example.go)
-
-由于目前 golang 尚未实现 [go:wasmexport](https://github.com/golang/go/issues/65199),
-目前需要 [`wasm-merge`](https://github.com/WebAssembly/binaryen) 来为 golang wasm 添加 wagi_wcgi export function
-
-`wasm-merge -all index.php m wcgi.wat m -o index.php`
-
-[wcgi.wat 文件在这](./example/wcgi.wat)
+具体查看 [example.go](./example/example.go), 使用 [`wcgi`](https://github.com/shynome/wcgi) 自动适配
 
 ## Todo
 

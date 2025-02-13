@@ -1,14 +1,14 @@
 module github.com/shynome/go-wagi
 
-go 1.22.3
+go 1.24.0
 
 require (
 	github.com/go-gost/core v0.0.0-20240424153155-5d6c2115fa15
 	github.com/go-gost/x v0.0.0-20240426125656-332a3a1cd09f
-	github.com/hashicorp/yamux v0.1.1
-	github.com/shynome/err0 v0.1.0
+	github.com/hashicorp/yamux v0.1.2
+	github.com/shynome/err0 v0.2.1
 	github.com/shynome/go-fsnet v1.0.2
-	github.com/shynome/wcgi v0.0.1
+	github.com/shynome/wcgi v0.1.0
 	github.com/spf13/cobra v1.8.0
 	github.com/tetratelabs/wazero v1.7.2
 	golang.org/x/net v0.24.0

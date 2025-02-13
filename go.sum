@@ -16,8 +16,8 @@ github.com/go-redis/redis/v8 v8.11.5 h1:AcZZR7igkdvfVmQTPnu9WE37LRrO/YrBH5zWyjDC
 github.com/go-redis/redis/v8 v8.11.5/go.mod h1:gREzHqY1hg6oD9ngVRbLStwAWKhA0FEgq8Jd4h5lpwo=
 github.com/gobwas/glob v0.2.3 h1:A4xDbljILXROh+kObIiy5kIaPYD8e96x1tgBhUI5J+Y=
 github.com/gobwas/glob v0.2.3/go.mod h1:d3Ez4x06l9bZtSvzIay5+Yzi0fmZzPgnTbPcKjJAkT8=
-github.com/hashicorp/yamux v0.1.1 h1:yrQxtgseBDrq9Y652vSRDvsKCJKOUD+GzTS4Y0Y8pvE=
-github.com/hashicorp/yamux v0.1.1/go.mod h1:CtWFDAQgb7dxtzFs4tWbplKIe2jSi3+5vKbgIO0SLnQ=
+github.com/hashicorp/yamux v0.1.2 h1:XtB8kyFOyHXYVFnwT5C3+Bdo8gArse7j2AQ0DA0Uey8=
+github.com/hashicorp/yamux v0.1.2/go.mod h1:C+zze2n6e/7wshOZep2A70/aQU6QBRWJO/G6FT1wIns=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
@@ -29,12 +29,12 @@ github.com/onsi/gomega v1.18.1/go.mod h1:0q+aL8jAiMXy9hbwj2mr5GziHiwhAIQpFmmtT5h
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
-github.com/shynome/err0 v0.1.0 h1:+cWnUkE2kZ9fFTTOrgSkoPzBuSppywI9gd0EFQrFaDw=
-github.com/shynome/err0 v0.1.0/go.mod h1:n5YVOAf8QSa8LMWWFKCXoHQjAjwjywKFiORV/btN3Aw=
+github.com/shynome/err0 v0.2.1 h1:pzSF+IDP59C94KVQb+zg/ZU8DC1CrIzJNjFQS3XjEvA=
+github.com/shynome/err0 v0.2.1/go.mod h1:n5YVOAf8QSa8LMWWFKCXoHQjAjwjywKFiORV/btN3Aw=
 github.com/shynome/go-fsnet v1.0.2 h1:U/bmX3hLlW0KuWrTkylTq1NUBw0BmqPcPJ/lBO5iHbU=
 github.com/shynome/go-fsnet v1.0.2/go.mod h1:S6UDjv8d3o32HrMJbBOMNOzLJA6/uMWMrM59vmHdYFM=
-github.com/shynome/wcgi v0.0.1 h1:+L8ptKQ0YtjVfkKJU1lVVKJDoOaRA+IrsxQM2XwL9YE=
-github.com/shynome/wcgi v0.0.1/go.mod h1:m0YRzjG6alTOrPttO79fsW6y62YGP4n34iMDT4y6eDc=
+github.com/shynome/wcgi v0.1.0 h1:opw31f0T/QvVpISKCsl3bI+EQNObQ7XPT9EasIvm2mM=
+github.com/shynome/wcgi v0.1.0/go.mod h1:PL7OZA5LDbsWKbQkXGl3qgdu4WG+HCzm0hI8QHBnE9A=
 github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE=
 github.com/sirupsen/logrus v1.8.1/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/spf13/cobra v1.8.0 h1:7aJaZx1B85qltLMc546zn58BxxfZdR/W22ej9CFoEf0=
